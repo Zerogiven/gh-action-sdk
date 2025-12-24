@@ -38,6 +38,7 @@ runs:
           --env BUILD_LOG \
           --env EXTRA_FEEDS \
           --env FEEDNAME \
+          --env TARGET \
           --env IGNORE_ERRORS \
           --env KEY_BUILD \
           --env PRIVATE_KEY \

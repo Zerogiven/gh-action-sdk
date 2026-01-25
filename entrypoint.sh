@@ -158,7 +158,9 @@ else
 
 	done
 
-	RUST_MAKEFILE="./feeds/packages/lang/rust/Makefile"
+	/builder/feeds
+
+	RUST_MAKEFILE="/builder/feeds/packages/lang/rust/"
 	if [ -f "$RUST_MAKEFILE" ] && grep -q "llvm.download-ci-llvm = true" "$RUST_MAKEFILE"; then
 		sed -i 's/llvm.download-ci-llvm = true/llvm.download-ci-llvm = "false"/' "$RUST_MAKEFILE" || true
 		echo "[PATCH] llvm.download-ci-llvm \"false\" ✅"

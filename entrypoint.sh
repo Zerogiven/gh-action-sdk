@@ -83,9 +83,7 @@ if [ -z "$PACKAGES" ]; then
 		IGNORE_ERRORS="$IGNORE_ERRORS" \
 		CONFIG_AUTOREMOVE=y \
 		V="$V" \
-		-j "1" || RET=$?
-
-# -j "$(nproc)" || RET=$?
+		-j "$(nproc)" || RET=$?
 else
 	# compile specific packages with checks
 	for PKG in $PACKAGES; do
@@ -179,12 +177,11 @@ else
 			IGNORE_ERRORS="$IGNORE_ERRORS" \
 			CONFIG_AUTOREMOVE=y \
 			V="$V" \
-			-j "1" \
+			-j "$(nproc)" \
 			"package/$PKG/compile" || {
 				RET=$?
 				break
 			}
-# 			-j "$(nproc)" \
 	done
 fi
 

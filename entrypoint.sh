@@ -173,6 +173,18 @@ sed -i 's/FILES:=$(PKG_BUILD_DIR).*/FILES:=/' ./feeds/base/package/kernel/lantiq
 
 # 3. Den Install-Schritt für das Kernel-Package neutralisieren
 sed -i '/define KernelPackage\/ltq-adsl-template/,/endef/ s/FILES:=.*/FILES:=/' ./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile
+
+sed -i '/\$(eval \$(call KernelPackage,ltq-adsl-danube))/i \
+define Build/Compile\
+	@true\
+endef\
+' ./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile
+
+sed -i '/\$(eval \$(call KernelPackage,ltq-adsl-danube))/i \
+define Build/InstallDev\
+	@true\
+endef\
+' ./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile
 	
 	cat ./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile
 	

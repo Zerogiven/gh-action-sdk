@@ -158,6 +158,7 @@ else
 
 	done
 
+	if [ -f "./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile" ]; then
 	sed -i '/\$(KERNEL_MAKE_FLAGS)/a MAKE_FLAGS += KCFLAGS="-Wno-error -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -Wno-ignored-qualifiers -Wno-misleading-indentation"' ./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile
 
 # 1. Den eigentlichen Kompiliervorgang deaktivieren
@@ -182,6 +183,7 @@ endef\
 ' ./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile
 
 	cat ./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile
+	fi
 
 	RUST_MAKEFILE="./feeds/packages/lang/rust/Makefile"
 	if [ -f "$RUST_MAKEFILE" ] && grep -q "llvm.download-ci-llvm=true" "$RUST_MAKEFILE"; then

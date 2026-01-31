@@ -158,32 +158,40 @@ else
 
 	done
 
-	if [ -f "./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile" ]; then
-	sed -i '/\$(KERNEL_MAKE_FLAGS)/a MAKE_FLAGS += KCFLAGS="-Wno-error -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -Wno-ignored-qualifiers -Wno-misleading-indentation"' ./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile
+LTQ_MAKEFILE_BASE="./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile"
+LTQ_MAKEFILE_BASE_ROOT="./feeds/base_root/package/kernel/lantiq/ltq-adsl/Makefile"
+
+# Wir prüfen beide Pfade in einer Schleife, falls beide existieren oder nur einer
+for LTQ_MAKEFILE in "$LTQ_MAKEFILE_BASE" "$LTQ_MAKEFILE_BASE_ROOT"; do
+    if [ -f "$LTQ_MAKEFILE" ]; then
+        echo "Patching $LTQ_MAKEFILE..."
+	sed -i '/\$(KERNEL_MAKE_FLAGS)/a MAKE_FLAGS += KCFLAGS="-Wno-error -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -Wno-ignored-qualifiers -Wno-misleading-indentation"' "$LTQ_MAKEFILE"
 
 # 1. Den eigentlichen Kompiliervorgang deaktivieren
-sed -i 's/$(call Build\/Compile\/Default)/@true/' ./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile
+sed -i 's/$(call Build\/Compile\/Default)/@true/' "$LTQ_MAKEFILE"
 
 # 2. Das Kopieren der (nicht existierenden) .ko Datei verhindern
-sed -i 's/FILES:=$(PKG_BUILD_DIR).*/FILES:=/' ./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile
+sed -i 's/FILES:=$(PKG_BUILD_DIR).*/FILES:=/' "$LTQ_MAKEFILE"
 
 # 3. Den Install-Schritt für das Kernel-Package neutralisieren
-sed -i '/define KernelPackage\/ltq-adsl-template/,/endef/ s/FILES:=.*/FILES:=/' ./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile
+sed -i '/define KernelPackage\/ltq-adsl-template/,/endef/ s/FILES:=.*/FILES:=/' "$LTQ_MAKEFILE"
 
 sed -i '/\$(eval \$(call KernelPackage,ltq-adsl-danube))/i \
 define Build/Compile\
 	@true\
 endef\
-' ./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile
+' "$LTQ_MAKEFILE"
 
 sed -i '/\$(eval \$(call KernelPackage,ltq-adsl-danube))/i \
 define Build/InstallDev\
 	@true\
 endef\
-' ./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile
+' "$LTQ_MAKEFILE"
 
-	cat ./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile
-	fi
+echo "Current state of $LTQ_MAKEFILE:"
+        cat "$LTQ_MAKEFILE"
+    fi
+done
 
 	RUST_MAKEFILE="./feeds/packages/lang/rust/Makefile"
 	if [ -f "$RUST_MAKEFILE" ] && grep -q "llvm.download-ci-llvm=true" "$RUST_MAKEFILE"; then

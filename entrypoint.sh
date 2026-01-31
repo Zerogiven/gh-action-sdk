@@ -159,7 +159,7 @@ else
 	done
 
 	ls -la ./feeds/base/package/kernel/lantiq/ltq-adsl/
-	cat ./feeds/base/package/kernel/lantiq/ltq-adsl/src/Makefile.am
+	cat ./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile
 
 	make \
 		-f .config \

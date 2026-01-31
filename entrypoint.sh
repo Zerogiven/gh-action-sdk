@@ -162,7 +162,8 @@ else
 	#cat ./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile
 
 	#sed -i '/\$(KERNEL_MAKE_FLAGS)/a MAKE_FLAGS += KCFLAGS="-Wno-error=int-to-pointer-cast -Wno-int-to-pointer-cast"' ./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile
-	sed -i '/\$(KERNEL_MAKE_FLAGS)/a MAKE_FLAGS += KCFLAGS="-Wno-error=int-to-pointer-cast -Wno-error=pointer-to-int-cast -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast"' ./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile
+	#sed -i '/\$(KERNEL_MAKE_FLAGS)/a MAKE_FLAGS += KCFLAGS="-Wno-error=int-to-pointer-cast -Wno-error=pointer-to-int-cast -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast"' ./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile
+	sed -i '/\$(KERNEL_MAKE_FLAGS)/a MAKE_FLAGS += KCFLAGS="-Wno-error -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -Wno-ignored-qualifiers -Wno-misleading-indentation"' ./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile
 	cat ./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile
 	
 	make \

@@ -158,8 +158,6 @@ else
 
 	done
 
-	wget -O ./feeds/base/package/kernel/lantiq/ltq-adsl/patches/412-silence-missing-prototypes-warnings.patch https://git.openwrt.org/?p=openwrt/openwrt.git;a=patch;h=5e196ba5489d5a612d9878816f1efc6e6d705530
-
 	make \
 		-f .config \
 		-f tmp/.packagedeps \

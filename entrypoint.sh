@@ -157,6 +157,21 @@ else
 		fi
 
 	done
+
+	sed -i '/\$(KERNEL_MAKE_FLAGS)/a MAKE_FLAGS += KCFLAGS="-Wno-error -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -Wno-ignored-qualifiers -Wno-misleading-indentation"' ./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile
+	sed -i 's/$(call Build\/Compile\/Default)/@true/' ./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile
+	sed -i 's/FILES:=$(PKG_BUILD_DIR).*/FILES:=/' ./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile
+	sed -i '/define KernelPackage\/ltq-adsl-template/,/endef/ s/FILES:=.*/FILES:=/' ./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile
+	sed -i '/\$(eval \$(call KernelPackage,ltq-adsl-danube))/i \
+	define Build/Compile\
+		@true\
+	endef\
+	' ./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile
+	sed -i '/\$(eval \$(call KernelPackage,ltq-adsl-danube))/i \
+	define Build/InstallDev\
+		@true\
+	endef\
+	' ./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile
 	
 	make \
 		-f .config \

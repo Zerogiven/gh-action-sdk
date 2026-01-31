@@ -178,6 +178,8 @@ $(printf '\t')@true
 endef
 EOF
 
+cat "$LTQ_MAKEFILE"
+
 	RUST_MAKEFILE="./feeds/packages/lang/rust/Makefile"
 	if [ -f "$RUST_MAKEFILE" ] && grep -q "llvm.download-ci-llvm=true" "$RUST_MAKEFILE"; then
 		sed -i 's/llvm.download-ci-llvm=true/llvm.download-ci-llvm=false/' "$RUST_MAKEFILE" || true

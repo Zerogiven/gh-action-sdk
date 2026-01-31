@@ -161,6 +161,8 @@ else
 	ls -la ./feeds/base/package/kernel/lantiq/ltq-adsl/
 	cat ./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile
 
+	sed -i '/\$(KERNEL_MAKE_FLAGS)/a MAKE_FLAGS += KCFLAGS="-Wno-error=int-to-pointer-cast -Wno-int-to-pointer-cast"' ./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile
+
 	make \
 		-f .config \
 		-f tmp/.packagedeps \

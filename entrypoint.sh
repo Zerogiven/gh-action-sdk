@@ -200,6 +200,14 @@ done
 	else
 		echo "[SKIP] llvm.download-ci-llvm"
 	fi
+
+    LIBGPIOD_MAKEFILE="./feeds/packages/libs/libgpiod/Makefile"
+    if [ -f "$LIBGPIOD_MAKEFILE" ] && ! grep -q "python-setuptools/host" "$LIBGPIOD_MAKEFILE"; then
+		sed -i '/^PYTHON3_PKG_BUILD:=0/a PKG_BUILD_DEPENDS:=PACKAGE_python3-gpiod:python-setuptools/host' "$LIBGPIOD_MAKEFILE" || true
+		echo "[PATCH] libgpiod setuptools/host dep ✅"
+    else
+        echo "[SKIP] libgpiod setuptools/host dep"
+    fi
 	
 	make \
 		-f .config \

@@ -26,6 +26,8 @@ group "bash setup.sh"
 endgroup
 
 FEEDNAME="${FEEDNAME:-action}"
+# Build requested packages by default, otherwise just check
+BUILD="${BUILD:-1}"
 BUILD_LOG="${BUILD_LOG:-1}"
 
 if [ -n "$KEY_BUILD" ]; then
@@ -100,19 +102,21 @@ else
 			"package/$PKG/download" V=s
 		endgroup
 
-		group "make package/$PKG/check"
+		[ "$BUILD" = '1' ] && group "make package/$PKG/check"
 		make \
 			BUILD_LOG="$BUILD_LOG" \
 			IGNORE_ERRORS="$IGNORE_ERRORS" \
 			"package/$PKG/check" V=s 2>&1 | \
 				tee logtmp
-		endgroup
 
 		RET=${PIPESTATUS[0]}
+		[ "$BUILD" = '1' ] && endgroup
 
 		if [ "$RET" -ne 0 ]; then
-			echo_red   "=> Package check failed: $RET)"
+			echo 'Package check failed'
 			exit "$RET"
+		elif [ "$BUILD" = 0 ]; then
+			echo 'Package check successful'
 		fi
 
 		badhash_msg="HASH does not match "
@@ -125,12 +129,12 @@ else
 
 		PATCHES_DIR=$(find /feed -path "*/$PKG/patches")
 		if [ -d "$PATCHES_DIR" ] && [ -z "$NO_REFRESH_CHECK" ]; then
-			group "make package/$PKG/refresh"
+			[ "$BUILD" = '1' ] && group "make package/$PKG/refresh"
 			make \
 				BUILD_LOG="$BUILD_LOG" \
 				IGNORE_ERRORS="$IGNORE_ERRORS" \
 				"package/$PKG/refresh" V=s
-			endgroup
+			[ "$BUILD" = '1' ] && endgroup
 
 			if ! git -C "$PATCHES_DIR" diff --quiet -- .; then
 				echo "Dirty patches detected, please refresh and review the diff"
@@ -155,43 +159,47 @@ else
 				exit 1
 			fi
 		fi
-
 	done
 
-LTQ_MAKEFILE_BASE="./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile"
-LTQ_MAKEFILE_BASE_ROOT="./feeds/base_root/package/kernel/lantiq/ltq-adsl/Makefile"
+	if [ "$BUILD" != '1' ]; then
+		echo 'Skipping build'
+		exit
+	fi
 
-# Wir prüfen beide Pfade in einer Schleife, falls beide existieren oder nur einer
-for LTQ_MAKEFILE in "$LTQ_MAKEFILE_BASE" "$LTQ_MAKEFILE_BASE_ROOT"; do
-    if [ -f "$LTQ_MAKEFILE" ]; then
-        echo "Patching $LTQ_MAKEFILE..."
-	sed -i '/\$(KERNEL_MAKE_FLAGS)/a MAKE_FLAGS += KCFLAGS="-Wno-error -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -Wno-ignored-qualifiers -Wno-misleading-indentation"' "$LTQ_MAKEFILE"
+# LTQ_MAKEFILE_BASE="./feeds/base/package/kernel/lantiq/ltq-adsl/Makefile"
+# LTQ_MAKEFILE_BASE_ROOT="./feeds/base_root/package/kernel/lantiq/ltq-adsl/Makefile"
 
-# 1. Den eigentlichen Kompiliervorgang deaktivieren
-sed -i 's/$(call Build\/Compile\/Default)/@true/' "$LTQ_MAKEFILE"
+# # Wir prüfen beide Pfade in einer Schleife, falls beide existieren oder nur einer
+# for LTQ_MAKEFILE in "$LTQ_MAKEFILE_BASE" "$LTQ_MAKEFILE_BASE_ROOT"; do
+#     if [ -f "$LTQ_MAKEFILE" ]; then
+#         echo "Patching $LTQ_MAKEFILE..."
+# 	sed -i '/\$(KERNEL_MAKE_FLAGS)/a MAKE_FLAGS += KCFLAGS="-Wno-error -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -Wno-ignored-qualifiers -Wno-misleading-indentation"' "$LTQ_MAKEFILE"
 
-# 2. Das Kopieren der (nicht existierenden) .ko Datei verhindern
-sed -i 's/FILES:=$(PKG_BUILD_DIR).*/FILES:=/' "$LTQ_MAKEFILE"
+# # 1. Den eigentlichen Kompiliervorgang deaktivieren
+# sed -i 's/$(call Build\/Compile\/Default)/@true/' "$LTQ_MAKEFILE"
 
-# 3. Den Install-Schritt für das Kernel-Package neutralisieren
-sed -i '/define KernelPackage\/ltq-adsl-template/,/endef/ s/FILES:=.*/FILES:=/' "$LTQ_MAKEFILE"
+# # 2. Das Kopieren der (nicht existierenden) .ko Datei verhindern
+# sed -i 's/FILES:=$(PKG_BUILD_DIR).*/FILES:=/' "$LTQ_MAKEFILE"
 
-sed -i '/\$(eval \$(call KernelPackage,ltq-adsl-danube))/i \
-define Build/Compile\
-	@true\
-endef\
-' "$LTQ_MAKEFILE"
+# # 3. Den Install-Schritt für das Kernel-Package neutralisieren
+# sed -i '/define KernelPackage\/ltq-adsl-template/,/endef/ s/FILES:=.*/FILES:=/' "$LTQ_MAKEFILE"
 
-sed -i '/\$(eval \$(call KernelPackage,ltq-adsl-danube))/i \
-define Build/InstallDev\
-	@true\
-endef\
-' "$LTQ_MAKEFILE"
+# sed -i '/\$(eval \$(call KernelPackage,ltq-adsl-danube))/i \
+# define Build/Compile\
+# 	@true\
+# endef\
+# ' "$LTQ_MAKEFILE"
 
-echo "Current state of $LTQ_MAKEFILE:"
-        cat "$LTQ_MAKEFILE"
-    fi
-done
+# sed -i '/\$(eval \$(call KernelPackage,ltq-adsl-danube))/i \
+# define Build/InstallDev\
+# 	@true\
+# endef\
+# ' "$LTQ_MAKEFILE"
+
+# echo "Current state of $LTQ_MAKEFILE:"
+#         cat "$LTQ_MAKEFILE"
+#     fi
+# done
 
 	RUST_MAKEFILE="./feeds/packages/lang/rust/Makefile"
 	if [ -f "$RUST_MAKEFILE" ] && grep -q "llvm.download-ci-llvm=true" "$RUST_MAKEFILE"; then
@@ -200,14 +208,6 @@ done
 	else
 		echo "[SKIP] llvm.download-ci-llvm"
 	fi
-
-    LIBGPIOD_MAKEFILE="./feeds/packages/libs/libgpiod/Makefile"
-    if [ -f "$LIBGPIOD_MAKEFILE" ] && ! grep -q "python-setuptools/host" "$LIBGPIOD_MAKEFILE"; then
-		sed -i '/^PYTHON3_PKG_BUILD:=0/a PKG_BUILD_DEPENDS:=PACKAGE_python3-gpiod:python-setuptools/host' "$LIBGPIOD_MAKEFILE" || true
-		echo "[PATCH] libgpiod setuptools/host dep ✅"
-    else
-        echo "[SKIP] libgpiod setuptools/host dep"
-    fi
 	
 	make \
 		-f .config \
